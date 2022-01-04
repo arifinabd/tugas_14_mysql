@@ -1,0 +1,104 @@
+MariaDB [belajar]> DROP TABLE IF EXISTS nilai_mahasiswa;
+Query OK, 0 rows affected, 1 warning (0.000 sec)
+
+MariaDB [belajar]> CREATE TABLE nilai_mahasiswa (
+     nim CHAR(8) PRIMARY KEY,
+     nama VARCHAR(50),
+     semester_1 DECIMAL(4,2),
+     semester_2 DECIMAL(4,2),
+     semester_3 DECIMAL(4,2)
+     );
+Query OK, 0 rows affected (0.021 sec)
+
+MariaDB [belajar]> DROP TABLE IF EXISTS ipk_mahasiswa;
+Query OK, 0 rows affected (0.006 sec)
+
+MariaDB [belajar]> CREATE TABLE ipk_mahasiswa (
+     nama_dan_nim VARCHAR(50) PRIMARY KEY,
+     nilai_ipk DECIMAL(4,2)
+     );
+Query OK, 0 rows affected (0.034 sec)
+
+
+MariaDB [belajar]> DELIMITER $$
+MariaDB [belajar]> CREATE TRIGGER after_insert_nilai
+     AFTER INSERT ON nilai_mahasiswa
+     FOR EACH ROW
+     BEGIN
+     DECLARE ipk DECIMAL(4,2);
+     SELECT ROUND((semester_1 + semester_2 + semester_3)/3 ,2) INTO ipk FROM nilai_mahasiswa LIMIT 1;
+     INSERT INTO ipk_mahasiswa VALUES (
+     concat(UCASE(NEW.nama), '(',NEW.nim,')'),
+     ipk
+     );
+     END$$
+Query OK, 0 rows affected (0.014 sec))
+
+MariaDB [belajar]> DELIMITER ;
+
+MariaDB [belajar]> insert into nilai_mahasiswa values
+    -> ('17090113', 'Riana Putria', 3.12, 2.98, 3.45);
+Query OK, 1 row affected (0.008 sec)
+
+MariaDB [belajar]> select * from nilai_mahasiswa;
++----------+--------------+------------+------------+------------+
+| nim      | nama         | semester_1 | semester_2 | semester_3 |
++----------+--------------+------------+------------+------------+
+| 17090113 | Riana Putria |       3.12 |       2.98 |       3.45 |
++----------+--------------+------------+------------+------------+
+1 row in set (0.000 sec)
+
+MariaDB [belajar]> select * from ipk_mahasiswa;
++------------------------+-----------+
+| nama_dan_nim           | nilai_ipk |
++------------------------+-----------+
+| RIANA PUTRIA(17090113) |      3.18 |
++------------------------+-----------+
+1 row in set (0.000 sec)
+
+============================================================================================================================
+===========================================================================================================================
+============================================================================================================================
+===========================================================================================================================
+
+MariaDB [belajar]> DROP TABLE IF EXISTS nilai_mahasiswa;
+Query OK, 0 rows affected, 1 warning (0.000 sec)
+
+MariaDB [belajar]> CREATE TABLE nilai_mahasiswa (
+     nim CHAR(8) PRIMARY KEY,
+     nama VARCHAR(50),
+     semester_1 DECIMAL(4,2),
+     semester_2 DECIMAL(4,2),
+     semester_3 DECIMAL(4,2)
+     );
+Query OK, 0 rows affected (0.021 sec)
+
+MariaDB [belajar]> create view ipk_mahasiswa as
+    -> select concat(UCASE(nilai_mahasiswa.nama),'(',nilai_mahasiswa.nim,')') as 'nama_dan_nim',
+    -> round((semester_1 + semester_2 + semester_3)/3 ,2) as 'nilai_ipk'
+    -> from nilai_mahasiswa;
+Query OK, 0 rows affected (0.011 sec)
+
+MariaDB [belajar]> insert into nilai_mahasiswa values ('17090113', 'Riana Putria', 3.12, 2.98, 3.45);
+Query OK, 1 row affected (0.009 sec)
+
+MariaDB [belajar]> insert into nilai_mahasiswa values ('17140143', 'Rudi Permana', 2.56, 3.14, 3.22);
+Query OK, 1 row affected (0.008 sec)
+
+MariaDB [belajar]> select * from nilai_mahasiswa;
++----------+--------------+------------+------------+------------+
+| nim      | nama         | semester_1 | semester_2 | semester_3 |
++----------+--------------+------------+------------+------------+
+| 17090113 | Riana Putria |       3.12 |       2.98 |       3.45 |
+| 17140143 | Rudi Permana |       2.56 |       3.14 |       3.22 |
++----------+--------------+------------+------------+------------+
+2 rows in set (0.000 sec)
+
+MariaDB [belajar]> select * from ipk_mahasiswa;
++------------------------+-----------+
+| nama_dan_nim           | nilai_ipk |
++------------------------+-----------+
+| RIANA PUTRIA(17090113) |      3.18 |
+| RUDI PERMANA(17140143) |      2.97 |
++------------------------+-----------+
+2 rows in set (0.007 sec)
